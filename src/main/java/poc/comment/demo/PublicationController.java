@@ -9,10 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-
-
-
 
 @RestController
 public class PublicationController {
@@ -21,6 +17,7 @@ public class PublicationController {
     private ResponseEntity<ErrorMessage> error = ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage(HttpStatus.NOT_FOUND.value(),"publicacion no encontrada"));
 
     public PublicationController() {
+
         publicationsList.add(new Publication(1,654, "La Finestra", "CUISINES : Italian, Pizza, Mediterranean, Neapolitan, Campania, Tuscan, Romana, Lazio, Sicilian, Central-Italian, Southern-Italian"));
         publicationsList.get(0).addReviewList(new Review(111, "Awesome italian restaurant in Santiago !", "If you’re looking for Italian food in Santiago, you have to go to La Finestra. Located in Ñuñoa, with a lovely garden hidden behind the entrance, you’ll enjoy a nice moment with your friends or family, discovering typical food and drinks from Italy.", 5));
         publicationsList.get(0).addReviewList(new Review(356, "Loved this place! Very cool vibe, setting. Authentic Italian pizza.", "I love a place where the owner is passionate about their food and their craft. If you go here, search out the owner and chat with him. Great guy from Italy, very passionate about the customer experience, the food and the venue. ", 5));
@@ -28,6 +25,7 @@ public class PublicationController {
         publicationsList.get(0).addReviewList(new Review(953, "Delicious but I want more", "This place is worth going to Nuñoa for. The only thing I would say is that I would love to have bigger portion sizes. Had the gorgonzola gnocchi. Delicious.", 4));
         publicationsList.get(0).addReviewList(new Review(523, "The pizza is hardly eatable!", "I have visited this place several times with variable success. The pasta is generally good but last time it was overcooked and without any taste. What was really bad was the pizza. I ordered one with mozzarella di buffala.", 1));
         publicationsList.get(0).addReviewList(new Review(423, "Excellent food, poor service", "We were pleasantly surprised by the reviews on TripAdvisor to find out that the hole-in-the-wall entrance that we thought was a crummy place was in reality a beautiful restaurant inside. The pizza and pasta we ordered was delicious and the menu had a large and good selection. The problem was the service. ", 3));
+    
     }
 
     @GetMapping("/publish")
@@ -100,8 +98,32 @@ public class PublicationController {
     }
 
     @GetMapping("/publish/{id}/review")
-    public String getMethodName(@RequestParam String param) {
-        return new String();
+    public ResponseEntity<?> getMethodName(@PathVariable String id) {
+        
+        int parsedId = validateInteger(id, "id");
+
+        if(parsedId == -1){
+            return error;
+        }
+
+        for (Publication publication : publicationsList) {
+            if (publication.getId() == parsedId) {
+
+                if (publication.getReviewList().size() == 0) {
+                    return buildResponseError(HttpStatus.NOT_FOUND,"la publicacion aun no tiene reseñas");
+                }
+
+                int sum = 0;
+                for (Review review : publication.getReviewList()) {
+                    sum += review.getStars();
+                }
+                double average = sum/publication.getReviewList().size();
+                
+                return ResponseEntity.ok(new ReviewDetail(parsedId, publication.getTitle(), Math.round(average)));
+            }
+        }
+
+        return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
     }
     
     @GetMapping("/publish/{id}/addreview/{title}/{description}/{stars}")
