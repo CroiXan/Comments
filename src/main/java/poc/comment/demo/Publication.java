@@ -1,6 +1,6 @@
 package poc.comment.demo;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Publication {
@@ -8,14 +8,13 @@ public class Publication {
     int usedId;
     String title;
     String description;
-    LocalDateTime publishDate;
-    List<Review> reviewList;
+    List<Review> reviewList = new ArrayList<>();
     
-    public Publication(int usedId, String title, String description, LocalDateTime publishDate) {
+    public Publication(int id, int usedId, String title, String description) {
+        this.id = id;
         this.usedId = usedId;
         this.title = title;
         this.description = description;
-        this.publishDate = publishDate;
     }
 
     public int getId() {
@@ -50,19 +49,12 @@ public class Publication {
         this.description = description;
     }
 
-    public LocalDateTime getPublishDate() {
-        return publishDate;
-    }
-
-    public void setPublishDate(LocalDateTime publishDate) {
-        this.publishDate = publishDate;
-    }
-
     public List<Review> getReviewList() {
         return reviewList;
     }
 
     public void addReviewList(Review review) {
+        review.setId(this.reviewList.size()+1);
         this.reviewList.add(review);
     }
     
