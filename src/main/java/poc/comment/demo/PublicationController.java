@@ -98,7 +98,7 @@ public class PublicationController {
     }
 
     @GetMapping("/publish/{id}/review")
-    public ResponseEntity<?> getMethodName(@PathVariable String id) {
+    public ResponseEntity<?> getReviewAverage(@PathVariable String id) {
         
         int parsedId = validateInteger(id, "id");
 
