@@ -53,9 +53,10 @@ public class Publication {
         return reviewList;
     }
 
-    public void addReviewList(Review review) {
+    public Review addReviewList(Review review) {
         review.setId(this.reviewList.size()+1);
         this.reviewList.add(review);
+        return review;
     }
     
 }

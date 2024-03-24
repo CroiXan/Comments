@@ -2,12 +2,16 @@ package poc.comment.demo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+
 
 
 @RestController
@@ -48,7 +52,89 @@ public class PublicationController {
 
         return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
     }
+
+    @GetMapping("/publish/{id}/edit/{title}/{description}")
+    public ResponseEntity<?> updatePublish(@PathVariable String id,@PathVariable String title,@PathVariable String description) {
+        int parsedId = validateInteger(id, "id");
+
+        if(parsedId == -1){
+            return error;
+        }
+
+        if (title.length() == 0) {
+            return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
+        }
+
+        if (description.length() == 0) {
+            return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
+        }
+
+        for (Publication publication : publicationsList) {
+            if (publication.getId() == parsedId) {
+                publication.setTitle(title);
+                publication.setDescription(description);
+                return ResponseEntity.ok(publication);
+            }
+        }
+
+        return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
+    }
     
+    @GetMapping("/publish/add/{title}/{description}")
+    public ResponseEntity<?> addPublish(@PathVariable String title,@PathVariable String description) {
+
+        if (title.length() == 0) {
+            return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
+        }
+
+        if (description.length() == 0) {
+            return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
+        }
+
+        Random random = new Random();
+        Publication localPublication = new Publication(this.publicationsList.size()+1, random.nextInt(9000)+1000, title, description);
+
+        this.publicationsList.add(localPublication);
+
+        return ResponseEntity.ok(localPublication);
+    }
+
+    @GetMapping("/publish/{id}/review")
+    public String getMethodName(@RequestParam String param) {
+        return new String();
+    }
+    
+    @GetMapping("/publish/{id}/addreview/{title}/{description}/{stars}")
+    public ResponseEntity<?> addReviewByPublishId(@PathVariable String id,@PathVariable String title,@PathVariable String description,@PathVariable String stars) {
+        int parsedId = validateInteger(id, "id");
+        int parsedStars = validateInteger(stars, "stars");
+
+        if(parsedId == -1 || parsedStars == -1){
+            return error;
+        }
+
+        if(parsedStars < 1 || parsedStars > 5){
+            return buildResponseError(HttpStatus.BAD_REQUEST,"el rango de stars es de 1 a 5");
+        }
+
+        if (title.length() == 0) {
+            return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
+        }
+
+        if (description.length() == 0) {
+            return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
+        }
+
+        for (Publication publication : publicationsList) {
+            if (publication.getId() == parsedId) {
+                Random random = new Random();
+                return ResponseEntity.ok(publication.addReviewList(new Review(random.nextInt(9000)+1000, title, description, parsedStars)));
+            }
+        }
+        
+        return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
+    }
+
     private int validateInteger(String intAsStr,String paramName){
         try {
             int parsedInt = Integer.parseInt(intAsStr);
