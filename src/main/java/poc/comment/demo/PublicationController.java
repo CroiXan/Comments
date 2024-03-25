@@ -1,5 +1,6 @@
 package poc.comment.demo;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -26,6 +27,27 @@ public class PublicationController {
         publicationsList.get(0).addReviewList(new Review(523, "The pizza is hardly eatable!", "I have visited this place several times with variable success. The pasta is generally good but last time it was overcooked and without any taste. What was really bad was the pizza. I ordered one with mozzarella di buffala.", 1));
         publicationsList.get(0).addReviewList(new Review(423, "Excellent food, poor service", "We were pleasantly surprised by the reviews on TripAdvisor to find out that the hole-in-the-wall entrance that we thought was a crummy place was in reality a beautiful restaurant inside. The pizza and pasta we ordered was delicious and the menu had a large and good selection. The problem was the service. ", 3));
     
+        publicationsList.add(new Publication(2, 234, "La Cabrera Chile Alonso", "CUISINES : Argentinean, Steakhouse"));
+        publicationsList.get(1).addReviewList(new Review(465, "DON'T GO!", "The Ritz recommended this restaurant. Our waitress didn't listen to a thing we said. The drinks were wrong, and the meal came all at the same time. It didn't even fit on the table. My husband was hungry for a steak", 1));
+        publicationsList.get(1).addReviewList(new Review(327, "Charred steak, screwed up scores", "Few disappointments rival the impact of hyper-expectations colliding with a starkly different reality during restaurant visits. A dining establishment touted as one of the premier steakhouses globally (included in the prestigious list of the top 101 steakhouses worldwide, prominently displayed at the entrance) serves a charred (!!) steak that, in addition, missed the mark on the desired level of doneness", 2));
+        publicationsList.get(1).addReviewList(new Review(467, "Great Service!", "The service was very good. The steaks were just okay. A bit tough and too fatty. A bit disappointing considering the high ratings. We expected a better quality meat.", 4));
+        publicationsList.get(1).addReviewList(new Review(234, "Fantastic stunning beautiful steaks", "Fantastic stunning food ginormous steaks…. waiter Ricardo was brilliant and very helpful. Will definitely come back!", 5));
+        publicationsList.get(1).addReviewList(new Review(156, "Fantastic food and fantastic staff", "Great food, great ambience, great waiter. Special thanks to Patricio. Really nice and most funniest guy. We really enjoyed the evening with him.", 5));
+
+        publicationsList.add(new Publication(3, 576, "Alto Aji Seco", "CUISINES : Peruvian, Latin, Seafood"));
+        publicationsList.get(2).addReviewList(new Review(943, "Excellent, but if it cost a bit less I'd give it 5 stars", "Excellent Peruvian restaurant in Las Condes. Lots of parking available. There aren't any other restaurants around that area so it's definitely a destination place. Nicely remodeled and decorated, friendly and courteous staff, great food served in generous portions. It's one of the better Peruvian restaurants we have tried in Chile so far. Better value than Tanta or La Mar.", 4));
+        publicationsList.get(2).addReviewList(new Review(763, "Really good peruvian food in Santiago", "I really enjoyed this restaurant. it is in the end of las condes almost going to el Arrayan o plaza san enrique, the place is nice, has a piano, a terrace and a elevator. we tried the barbequed octopus, and the ceviche trio for starters, they where outstanding. The pisco sour was good also, but the dish that i enjoyed the most was the Lomo mary tierra (Lomo land and ocean).", 4));
+        publicationsList.get(2).addReviewList(new Review(362, "Good food and good service.", "This is Peruin cuisine, the food is good so as the atmersfere and service. It is not cheap for the locals, but you pay for what you enjoy.v", 4));
+        publicationsList.get(2).addReviewList(new Review(235, "Good food, poor service, high prices", "This restaurant serves refined peruvian food, but at very high prices, I domn´t think it is a good value-price place to go. Although this restaurant doesn´t have a closing hour (the same as almost every other restaurant in Chile), as soon as we finished with our dessert, they started to do things to get us out of tghe rerstaurant as soon as possible:very loud music, dim the lights and stopped the central heating so that we would be cold.", 2));
+        publicationsList.get(2).addReviewList(new Review(635, "Delicious", "Great service, great food, great ambiance, and wonderful ceviches and pisco sours. It is a great restaurant to go, with family or just couples...", 5));
+
+        publicationsList.add(new Publication(4, 875, "Tanta", "CUISINES : Peruvian, Latin, Seafood"));
+        publicationsList.get(3).addReviewList(new Review(764, "Average food and service", "Big fan of Gaston Acurio and his restaurants but this one doesn’t seem to be at par. It’s more of a production line version of his restaurants. The service was just okay. Two items in the menu we asked for weren’t available.", 3));
+        publicationsList.get(3).addReviewList(new Review(936, "Poor service. Orders take too long. Better places nearby. Rude waiters. I do not recommend this place at all!", "Poor service. Orders takes too long. Waiters are rude. Better places nearby, just look around! I don’t recommend this place at all!", 1));
+        publicationsList.get(3).addReviewList(new Review(724, "Great Peruvian food, but a bit pricey", "A Peruvian friend recommended me this place so I had to try it. It's located inside a food court in a mall, but it's big enough that it isn't really a problem. It's really great; the food was excellent and the service also good.", 4));
+        publicationsList.get(3).addReviewList(new Review(254, "delicious food and lovely appetizer", "amazing ceviche. We had very nice friendly service and a helpful waiter even though our spanish was minimal", 5));
+        publicationsList.get(3).addReviewList(new Review(736, "Fantastic Octupus & Pisco", "Had a great lunch today with my business associates - had two Octopus with a great light spiced sauce and and superb chicken dish with equivalent sauce.", 4));
+
     }
 
     @GetMapping("/publish")
@@ -113,13 +135,15 @@ public class PublicationController {
                     return buildResponseError(HttpStatus.NOT_FOUND,"la publicacion aun no tiene reseñas");
                 }
 
-                int sum = 0;
+                double sum = 0;
                 for (Review review : publication.getReviewList()) {
                     sum += review.getStars();
                 }
                 double average = sum/publication.getReviewList().size();
                 
-                return ResponseEntity.ok(new ReviewDetail(parsedId, publication.getTitle(), Math.round(average)));
+                DecimalFormat format = new DecimalFormat("#.##");
+
+                return ResponseEntity.ok(new ReviewDetail(parsedId, publication.getTitle(), Double.parseDouble(format.format(average))));
             }
         }
 
