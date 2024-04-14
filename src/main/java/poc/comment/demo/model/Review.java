@@ -19,7 +19,7 @@ public class Review {
     @Column(name="id_publicacion")
     Long idPublication;
 
-    @Column(name="usedId")
+    @Column(name="user_id")
     int userId;
 
     @Column(name="title")
@@ -30,6 +30,10 @@ public class Review {
 
     @Column(name="stars")
     int stars;
+    
+
+    public Review() {
+    }
 
     public Review(Long id, Long idPublication, int userId, String title, String description, int stars) {
         this.id = id;

@@ -6,7 +6,7 @@ CREATE TABLE publicacion (
                           MAXVALUE 99999999
                           INCREMENT BY 1 
                           START WITH 1,
-    usedId          NUMBER(4) NOT NULL,
+    user_id          NUMBER(4) NOT NULL,
     title           VARCHAR2(100) NOT NULL,
     descripcion     VARCHAR2(400) NOT NULL
 );
@@ -19,7 +19,7 @@ CREATE TABLE resenia (
                           INCREMENT BY 1 
                           START WITH 1,
     id_publicacion  NUMBER(8) NOT NULL,
-    usedId          NUMBER(4) NOT NULL,
+    user_id          NUMBER(4) NOT NULL,
     title           VARCHAR2(150) NOT NULL,
     descripcion     VARCHAR2(500) NOT NULL,
     stars           NUMBER(1)

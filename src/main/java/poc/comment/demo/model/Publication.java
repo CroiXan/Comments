@@ -1,8 +1,5 @@
 package poc.comment.demo.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,8 +16,8 @@ public class Publication {
     @Column(name="id_publicacion")
     Long id;
 
-    @Column(name="usedId")
-    int usedId;
+    @Column(name="user_id")
+    int userId;
 
     @Column(name="title")
     String title;
@@ -28,17 +25,18 @@ public class Publication {
     @Column(name="descripcion")
     String description;
 
-    List<Review> reviewList = new ArrayList<>();
+    public Publication() {
+    }
 
-    public Publication(Long id, int usedId, String title, String description) {
+    public Publication(Long id, int userId, String title, String description) {
         this.id = id;
-        this.usedId = usedId;
+        this.userId = userId;
         this.title = title;
         this.description = description;
     }
 
-    public Publication(int usedId, String title, String description) {
-        this.usedId = usedId;
+    public Publication(int userId, String title, String description) {
+        this.userId = userId;
         this.title = title;
         this.description = description;
     }
@@ -51,12 +49,12 @@ public class Publication {
         this.id = id;
     }
 
-    public int getUsedId() {
-        return usedId;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setUsedId(int usedId) {
-        this.usedId = usedId;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getTitle() {
@@ -73,15 +71,6 @@ public class Publication {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public List<Review> getReviewList() {
-        return reviewList;
-    }
-
-    public Review addReviewList(Review review) {
-        this.reviewList.add(review);
-        return review;
     }
     
 }
