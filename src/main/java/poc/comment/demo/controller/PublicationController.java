@@ -68,6 +68,10 @@ public class PublicationController {
             return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo");
         }
 
+        if(publication.getUserId() > 9999){
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser superar 4 digitos");
+        }
+
         if (publication.getTitle().length() == 0) {
             return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
         }
@@ -93,6 +97,10 @@ public class PublicationController {
 
         if (publication.getDescription().length() == 0) {
             return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
+        }
+
+        if(publication.getUserId() > 9999){
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser superar 4 digitos");
         }
 
         return ResponseEntity.ok(publicationService.createPublication(publication));

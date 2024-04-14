@@ -65,8 +65,12 @@ public class ReviewController {
             return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo");
         }
 
-        if(review.getUserId() <= 0){
+        if(review.getUserId() <= 0 ){
             return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo o 0");
+        }
+
+        if(review.getUserId() > 9999){
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser superar 4 digitos");
         }
 
         if(review.getStars() < 1 || review.getStars() > 5){
@@ -99,6 +103,10 @@ public class ReviewController {
             return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo o 0");
         }
 
+        if(review.getUserId() > 9999){
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser superar 4 digitos");
+        }
+
         if(review.getStars() < 1 || review.getStars() > 5){
             return buildResponseError(HttpStatus.BAD_REQUEST,"el rango de stars es de 1 a 5");
         }
@@ -115,6 +123,10 @@ public class ReviewController {
             return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
         }
 
+        if (reviewService.existsReviewById(review.getId())) {
+            return buildResponseError(HttpStatus.NOT_FOUND,"reseña no encontrada");
+        }
+
         return ResponseEntity.ok(reviewService.updateReview(review.getId(),review));
     }
 
@@ -129,7 +141,7 @@ public class ReviewController {
 
         reviewService.deleteReview(parsedId);
 
-        return ResponseEntity.ok().body("Resenia " + parsedId + " borrada.");
+        return ResponseEntity.ok().body("Reseña " + parsedId + " borrada.");
     }
 
     private Long validateInteger(String intAsStr,String paramName){

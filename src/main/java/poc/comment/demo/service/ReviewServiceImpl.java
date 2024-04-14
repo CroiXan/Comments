@@ -45,4 +45,9 @@ public class ReviewServiceImpl implements ReviewService{
         reviewRepository.deleteById(id);
     }
 
+    @Override
+    public boolean existsReviewById(Long id) {
+        return reviewRepository.existsById(id);
+    }
+
 }
