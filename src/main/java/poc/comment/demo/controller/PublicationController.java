@@ -64,8 +64,8 @@ public class PublicationController {
     @PutMapping
     public ResponseEntity<?> updatePublish(@RequestBody Publication publication) {
 
-        if(publication.getId() == -1L){
-            return error;
+        if(publication.getId() < 0L){
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo");
         }
 
         if (publication.getTitle().length() == 0) {
@@ -153,37 +153,6 @@ public class PublicationController {
         return ResponseEntity.ok(new ReviewDetail(Long.valueOf(parsedId).intValue(), publication.get().getTitle(), Double.parseDouble(format.format(average))));
 
     }
-    
-    /*@GetMapping("/publish/{id}/addreview/{title}/{description}/{stars}")
-    public ResponseEntity<?> addReviewByPublishId(@PathVariable String id,@PathVariable String title,@PathVariable String description,@PathVariable String stars) {
-        Long parsedId = validateInteger(id, "id");
-        Long parsedStars = validateInteger(stars, "stars");
-
-        if(parsedId == -1 || parsedStars == -1){
-            return error;
-        }
-
-        if(parsedStars < 1 || parsedStars > 5){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"el rango de stars es de 1 a 5");
-        }
-
-        if (title.length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
-        }
-
-        if (description.length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
-        }
-
-        for (Publication publication : publicationsList) {
-            if (publication.getId() == parsedId) {
-                Random random = new Random();
-                return ResponseEntity.ok(publication.addReviewList(new Review(random.nextInt(9000)+1000, title, description, Long.valueOf(parsedStars).intValue() )));
-            }
-        }
-        
-        return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
-    }*/
 
     private Long validateInteger(String intAsStr,String paramName){
         try {

@@ -45,6 +45,7 @@ public class PublicationServiceImpl implements PublicationService{
         publicationRepository.deleteById(id);
     }
 
+    @Override
     public boolean existsPublicationById(Long id){
         return publicationRepository.existsById(id);
     }

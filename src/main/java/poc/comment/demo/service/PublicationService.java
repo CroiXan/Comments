@@ -11,4 +11,5 @@ public interface PublicationService {
     Publication createPublication(Publication publication);
     Publication updatePublication(Long id, Publication publication);
     void deletePublication(Long id);
+    boolean existsPublicationById(Long id);
 }
