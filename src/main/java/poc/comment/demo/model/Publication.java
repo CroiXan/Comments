@@ -37,6 +37,12 @@ public class Publication {
         this.description = description;
     }
 
+    public Publication(int usedId, String title, String description) {
+        this.usedId = usedId;
+        this.title = title;
+        this.description = description;
+    }
+
     public Long getId() {
         return id;
     }

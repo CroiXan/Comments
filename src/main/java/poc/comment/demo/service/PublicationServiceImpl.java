@@ -45,4 +45,8 @@ public class PublicationServiceImpl implements PublicationService{
         publicationRepository.deleteById(id);
     }
 
+    public boolean existsPublicationById(Long id){
+        return publicationRepository.existsById(id);
+    }
+
 }
