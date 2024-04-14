@@ -1,4 +1,4 @@
-package poc.comment.demo;
+package poc.comment.demo.model;
 
 public class ReviewDetail {
     private int publishId;
