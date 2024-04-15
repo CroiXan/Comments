@@ -61,12 +61,14 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<?> addReview(@RequestBody Review review) {
         
-        if(review.getId() < 0){
+        if(review.getId() != null && review.getId() < 0){
             return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo");
         }
 
+        review.setId(null);
+
         if(review.getUserId() <= 0 ){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo o 0");
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser un valor negativo o 0");
         }
 
         if(review.getUserId() > 9999){
@@ -85,7 +87,7 @@ public class ReviewController {
             return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
         }
 
-        if (publicationService.existsPublicationById(review.getIdPublication())) {
+        if (!publicationService.existsPublicationById(review.getIdPublication())) {
             return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
         }
 
@@ -94,13 +96,17 @@ public class ReviewController {
 
     @PutMapping
     public ResponseEntity<?> updateReview(@RequestBody Review review) {
+
+        if (review.getId() == null) {
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede estar vacio");
+        }
         
         if(review.getId() < 0){
             return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo");
         }
 
         if(review.getUserId() <= 0){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo o 0");
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser un valor negativo o 0");
         }
 
         if(review.getUserId() > 9999){
@@ -119,11 +125,11 @@ public class ReviewController {
             return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
         }
 
-        if (publicationService.existsPublicationById(review.getIdPublication())) {
+        if (!publicationService.existsPublicationById(review.getIdPublication())) {
             return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
         }
 
-        if (reviewService.existsReviewById(review.getId())) {
+        if (!reviewService.existsReviewById(review.getId())) {
             return buildResponseError(HttpStatus.NOT_FOUND,"reseña no encontrada");
         }
 

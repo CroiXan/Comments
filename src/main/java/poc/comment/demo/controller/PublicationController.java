@@ -64,8 +64,16 @@ public class PublicationController {
     @PutMapping
     public ResponseEntity<?> updatePublish(@RequestBody Publication publication) {
 
+        if(publication.getId() == null){
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede estar vacio");
+        }
+
         if(publication.getId() < 0L){
             return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo");
+        }
+
+        if(publication.getUserId() < 0L){
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser un valor negativo");
         }
 
         if(publication.getUserId() > 9999){
@@ -80,7 +88,7 @@ public class PublicationController {
             return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
         }
 
-        if (publicationService.existsPublicationById(publication.getId())) {
+        if (!publicationService.existsPublicationById(publication.getId())) {
             return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
         }
 
@@ -90,6 +98,12 @@ public class PublicationController {
     
     @PostMapping
     public ResponseEntity<?> addPublish(@RequestBody Publication publication) {
+
+        publication.setId(null);
+
+        if(publication.getUserId() < 0L){
+            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser un valor negativo");
+        }
 
         if (publication.getTitle().length() == 0) {
             return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
@@ -115,7 +129,7 @@ public class PublicationController {
             return error;
         }
         
-        if (publicationService.existsPublicationById(parsedId)) {
+        if (!publicationService.existsPublicationById(parsedId)) {
             return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
         }
 
