@@ -145,6 +145,10 @@ public class ReviewController {
             return error;
         }
 
+        if (!reviewService.existsReviewById(parsedId)) {
+            return buildResponseError(HttpStatus.NOT_FOUND,"reseña no encontrada");
+        }
+
         reviewService.deleteReview(parsedId);
 
         return ResponseEntity.ok().body("Reseña " + parsedId + " borrada.");
