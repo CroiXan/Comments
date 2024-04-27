@@ -3,18 +3,22 @@ package poc.comment.demo.controller;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import poc.comment.demo.model.ErrorMessage;
+import poc.comment.demo.model.ParsedLong;
 import poc.comment.demo.model.Publication;
 import poc.comment.demo.model.Review;
 import poc.comment.demo.model.ReviewDetail;
 import poc.comment.demo.service.PublicationService;
 import poc.comment.demo.service.ReviewService;
+import poc.comment.demo.service.ServiceUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,117 +33,137 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/publish")
 public class PublicationController {
 
-    private ResponseEntity<ErrorMessage> error = ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage(HttpStatus.NOT_FOUND.value(),"publicacion no encontrada"));
-
     @Autowired
     private PublicationService publicationService;
 
     @Autowired
     private ReviewService reviewService;
 
+    private ServiceUtils serviceUtils;
+
     @GetMapping
-    public ResponseEntity<List<Publication>> getAllPublish() {
-        return ResponseEntity.ok(publicationService.getAllPublications());
+    public CollectionModel<EntityModel<Publication>> getAllPublish() {
+
+        List<Publication> publications = publicationService.getAllPublications();
+
+        List<EntityModel<Publication>> publicationResource = publications.stream()
+            .map(product -> EntityModel.of(product,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getPublishById(product.getId())).withSelfRel()
+            ))
+            .collect(Collectors.toList());
+        
+        WebMvcLinkBuilder linkTo = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllPublish());
+
+        CollectionModel<EntityModel<Publication>> resources = CollectionModel.of(publicationResource, linkTo.withRel("publish"));
+
+        return resources;
+
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getPublishById(@PathVariable String id) {
+    public EntityModel<Publication> getPublishById(@PathVariable Long id) {
 
-        Long parsedId = validateInteger(id, "id");
+        Optional<Publication> publication = publicationService.getPublicationById(id);
 
-        if(parsedId == -1){
-            return error;
+        if (publication.isPresent()) {
+            return EntityModel.of(publication.get(),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getPublishById(id)).withSelfRel(),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllPublish()).withRel("all-publish")
+            );
+        }else{
+            throw new PublicationNotFoundException("Publicacion no encontrada con Id: " + id);
         }
-
-        Optional<Publication> publication = publicationService.getPublicationById(parsedId);
-
-        if (publication.isEmpty()) {
-            return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
-        }
-        
-        return ResponseEntity.ok(publication);
 
     }
 
-    @PutMapping
-    public ResponseEntity<?> updatePublish(@RequestBody Publication publication) {
+    @PutMapping("/{id}")
+    public EntityModel<Publication> updatePublish(@PathVariable Long id,@RequestBody Publication publication) {
 
         if(publication.getId() == null){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede estar vacio");
+            throw new PublicationBadRequestException("id no puede estar vacio");
         }
 
         if(publication.getId() < 0L){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo");
+            throw new PublicationBadRequestException("id no puede ser un valor negativo");
         }
 
         if(publication.getUserId() < 0L){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser un valor negativo");
+            throw new PublicationBadRequestException("id de usuario no puede ser un valor negativo");
         }
 
         if(publication.getUserId() > 9999){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser superar 4 digitos");
+            throw new PublicationBadRequestException("id de usuario no puede ser superar 4 digitos");
         }
 
         if (publication.getTitle().length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
+            throw new PublicationBadRequestException("title no puede estar vacio");
         }
 
         if (publication.getDescription().length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
+            throw new PublicationBadRequestException("description no puede estar vacio");
         }
 
         if (!publicationService.existsPublicationById(publication.getId())) {
-            return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
+            throw new PublicationNotFoundException("publicacion no encontrada");
         }
 
-        return ResponseEntity.ok(publicationService.updatePublication(publication.getId(), publication));
-        
+        Publication updatedPublication = publicationService.updatePublication(id,publication);
+        return EntityModel.of(updatedPublication,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getPublishById(updatedPublication.getId())).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllPublish()).withRel("all-publish")
+        );
+
     }
     
     @PostMapping
-    public ResponseEntity<?> addPublish(@RequestBody Publication publication) {
+    public EntityModel<Publication> addPublish(@RequestBody Publication publication) {
 
         publication.setId(null);
 
         if(publication.getUserId() < 0L){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser un valor negativo");
+            throw new PublicationBadRequestException("id de usuario no puede ser un valor negativo");
         }
 
         if (publication.getTitle().length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
+            throw new PublicationBadRequestException("title no puede estar vacio");
         }
 
         if (publication.getDescription().length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
+            throw new PublicationBadRequestException("description no puede estar vacio");
         }
 
         if(publication.getUserId() > 9999){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser superar 4 digitos");
+            throw new PublicationNotFoundException("id de usuario no puede ser superar 4 digitos");
         }
 
-        return ResponseEntity.ok(publicationService.createPublication(publication));
+        Publication createdPublication = publicationService.createPublication(publication);
+        return EntityModel.of(createdPublication,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getPublishById(createdPublication.getId())).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllPublish()).withRel("all-publish")
+        );
+
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePublish(@PathVariable String id){
 
-        Long parsedId = validateInteger(id, "id");
+        ParsedLong parsedId = serviceUtils.validateLong(id, "id");
 
-        if(parsedId == -1){
-            return error;
+        if(!parsedId.isSuccess()){
+            throw new PublicationBadRequestException(parsedId.getErrorMessage());
         }
         
-        if (!publicationService.existsPublicationById(parsedId)) {
-            return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
+        if (!publicationService.existsPublicationById(parsedId.getResultLong())) {
+            throw new PublicationNotFoundException("publicacion no encontrada");
         }
 
         for (Review review : reviewService.getAllReviews()) {
-            if (review.getIdPublication() == parsedId) {
+            if (review.getIdPublication() == parsedId.getResultLong()) {
                 reviewService.deleteReview(review.getId());
             }
         }
 
-        publicationService.deletePublication(parsedId);
+        publicationService.deletePublication(parsedId.getResultLong());
 
         return ResponseEntity.ok().body("Publicacion " + parsedId + " borrada.");
     }
@@ -147,22 +171,22 @@ public class PublicationController {
     @GetMapping("/{id}/review")
     public ResponseEntity<?> getReviewAverage(@PathVariable String id) {
         
-        Long parsedId = validateInteger(id, "id");
+        ParsedLong parsedId = serviceUtils.validateLong(id, "id");
         int countReviews = 0;
         double starsSum = 0;
 
-        if(parsedId == -1){
-            return error;
+        if(!parsedId.isSuccess()){
+            throw new PublicationBadRequestException(parsedId.getErrorMessage());
         }
 
-        Optional<Publication> publication = publicationService.getPublicationById(parsedId);
+        Optional<Publication> publication = publicationService.getPublicationById(parsedId.getResultLong());
 
         if (publication.isEmpty()) {
-            return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
+            throw new PublicationNotFoundException("publicacion no encontrada");
         }
 
         for (Review review : reviewService.getAllReviews()) {
-            if (review.getIdPublication() == parsedId) {
+            if (review.getIdPublication() == parsedId.getResultLong()) {
                 countReviews++;
                 starsSum += review.getStars();
             }
@@ -172,27 +196,8 @@ public class PublicationController {
                 
         DecimalFormat format = new DecimalFormat("#.##");
 
-        return ResponseEntity.ok(new ReviewDetail(Long.valueOf(parsedId).intValue(), publication.get().getTitle(), Double.parseDouble(format.format(average))));
+        return ResponseEntity.ok(new ReviewDetail(Long.valueOf(parsedId.getResultLong()).intValue(), publication.get().getTitle(), Double.parseDouble(format.format(average))));
 
     }
 
-    private Long validateInteger(String intAsStr,String paramName){
-        try {
-            Long parsedInt = Long.parseLong(intAsStr);
-
-            if(parsedInt < 0){
-                parsedInt = -1L;
-                error = buildResponseError(HttpStatus.BAD_REQUEST,paramName+" no puede ser negativo");
-            }
-
-            return parsedInt;
-        } catch (Exception e) {
-            error = buildResponseError(HttpStatus.BAD_REQUEST,paramName+" no valido");
-            return -1L;
-        }
-    }
-
-    private ResponseEntity<ErrorMessage> buildResponseError(HttpStatus status,String message){
-        return ResponseEntity.status(status).body(new ErrorMessage(status.value(),message));
-    }
 }

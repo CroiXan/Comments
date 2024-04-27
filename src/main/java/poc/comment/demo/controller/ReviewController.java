@@ -2,16 +2,21 @@ package poc.comment.demo.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import poc.comment.demo.model.ErrorMessage;
+import poc.comment.demo.model.ParsedLong;
 import poc.comment.demo.model.Review;
 import poc.comment.demo.service.PublicationService;
 import poc.comment.demo.service.ReviewService;
+import poc.comment.demo.service.ServiceUtils;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,13 +25,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-
 @RestController
 @RequestMapping("/review")
 public class ReviewController {
-
-    private ResponseEntity<ErrorMessage> error = ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage(HttpStatus.NOT_FOUND.value(),"publicacion no encontrada"));
 
     @Autowired
     private PublicationService publicationService;
@@ -34,143 +35,147 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
+    private ServiceUtils serviceUtils;
+
     @GetMapping
-    public ResponseEntity<List<Review>> getAllReviews() {
-        return ResponseEntity.ok(reviewService.getAllReviews());
+    public CollectionModel<EntityModel<Review>> getAllReviews() {
+
+        List<Review> reviews = reviewService.getAllReviews();
+
+        List<EntityModel<Review>> reviewResource = reviews.stream()
+            .map(review -> EntityModel.of(review,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getReviewById(review.getId())).withSelfRel()
+            ))
+            .collect(Collectors.toList());
+        
+        WebMvcLinkBuilder linkTo = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllReviews());
+
+        CollectionModel<EntityModel<Review>> resources = CollectionModel.of(reviewResource, linkTo.withRel("review"));
+
+        return resources;
+
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getReviewById(@PathVariable String id) {
+    public EntityModel<Review> getReviewById(@PathVariable Long id) {
 
-        Long parsedId = validateInteger(id, "id");
+        Optional<Review> pelicula = reviewService.getReviewById(id);
 
-        if(parsedId == -1){
-            return error;
+        if (pelicula.isPresent()) {
+            return EntityModel.of(pelicula.get(),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getReviewById(id)).withSelfRel(),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllReviews()).withRel("all-reviews")
+            );
+        }else{
+            throw new ReviewNotFoundException("reseña de venta no encontrado con id: " + id);
         }
-
-        Optional<Review> review = reviewService.getReviewById(parsedId);
-
-        if (review.isEmpty()) {
-            return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
-        }
-        
-        return ResponseEntity.ok(review);
 
     }
 
     @PostMapping
-    public ResponseEntity<?> addReview(@RequestBody Review review) {
+    public EntityModel<Review> addReview(@RequestBody Review review) {
         
         if(review.getId() != null && review.getId() < 0){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo");
+            throw new ReviewBadRequestException("id no puede ser un valor negativo");
         }
 
         review.setId(null);
 
         if(review.getUserId() <= 0 ){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser un valor negativo o 0");
+            throw new ReviewBadRequestException("id de usuario no puede ser un valor negativo o 0");
         }
 
         if(review.getUserId() > 9999){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser superar 4 digitos");
+            throw new ReviewBadRequestException("id de usuario no puede ser superar 4 digitos");
         }
 
         if(review.getStars() < 1 || review.getStars() > 5){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"el rango de stars es de 1 a 5");
+            throw new ReviewBadRequestException("el rango de stars es de 1 a 5");
         }
 
         if (review.getTitle().length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
+            throw new ReviewBadRequestException("title no puede estar vacio");
         }
 
         if (review.getDescription().length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
+            throw new ReviewBadRequestException("description no puede estar vacio");
         }
 
         if (!publicationService.existsPublicationById(review.getIdPublication())) {
-            return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
+            throw new PublicationNotFoundException("publicacion no encontrada");
         }
 
-        return ResponseEntity.ok(reviewService.createReview(review));
+        Review createdReview = reviewService.createReview(review);
+        return EntityModel.of(createdReview,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getReviewById(createdReview.getId())).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllReviews()).withRel("all-reviews")
+        );
+
     }
 
-    @PutMapping
-    public ResponseEntity<?> updateReview(@RequestBody Review review) {
+    @PutMapping("/{id}")
+    public EntityModel<Review> updateReview(@PathVariable Long id, @RequestBody Review review) {
 
         if (review.getId() == null) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede estar vacio");
+            throw new ReviewBadRequestException("id no puede estar vacio");
         }
         
         if(review.getId() < 0){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id no puede ser un valor negativo");
+            throw new ReviewBadRequestException("id no puede ser un valor negativo");
         }
 
         if(review.getUserId() <= 0){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser un valor negativo o 0");
+            throw new ReviewBadRequestException("id de usuario no puede ser un valor negativo o 0");
         }
 
         if(review.getUserId() > 9999){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"id de usuario no puede ser superar 4 digitos");
+            throw new ReviewBadRequestException("id de usuario no puede ser superar 4 digitos");
         }
 
         if(review.getStars() < 1 || review.getStars() > 5){
-            return buildResponseError(HttpStatus.BAD_REQUEST,"el rango de stars es de 1 a 5");
+            throw new ReviewBadRequestException("el rango de stars es de 1 a 5");
         }
 
         if (review.getTitle().length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"title no puede estar vacio");
+            throw new ReviewBadRequestException("title no puede estar vacio");
         }
 
         if (review.getDescription().length() == 0) {
-            return buildResponseError(HttpStatus.BAD_REQUEST,"description no puede estar vacio");
+            throw new ReviewBadRequestException("description no puede estar vacio");
         }
 
         if (!publicationService.existsPublicationById(review.getIdPublication())) {
-            return buildResponseError(HttpStatus.NOT_FOUND,"publicacion no encontrada");
+            throw new PublicationNotFoundException("publicacion no encontrada");
         }
 
         if (!reviewService.existsReviewById(review.getId())) {
-            return buildResponseError(HttpStatus.NOT_FOUND,"reseña no encontrada");
+            throw new ReviewNotFoundException("reseña no encontrada");
         }
 
-        return ResponseEntity.ok(reviewService.updateReview(review.getId(),review));
+        Review updatedReviewl = reviewService.updateReview(id, review);
+        return EntityModel.of(updatedReviewl,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getReviewById(id)).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllReviews()).withRel("all-reviews")
+        );
+
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteReview(@PathVariable String id){
 
-        Long parsedId = validateInteger(id, "id");
+        ParsedLong parsedId = serviceUtils.validateLong(id, "id");
 
-        if(parsedId == -1){
-            return error;
+        if (!parsedId.isSuccess()) {
+            throw new ReviewBadRequestException(parsedId.getErrorMessage());
         }
 
-        if (!reviewService.existsReviewById(parsedId)) {
-            return buildResponseError(HttpStatus.NOT_FOUND,"reseña no encontrada");
+        if (!reviewService.existsReviewById(parsedId.getResultLong())) {
+            throw new ReviewNotFoundException("reseña no encontrada");
         }
 
-        reviewService.deleteReview(parsedId);
+        reviewService.deleteReview(parsedId.getResultLong());
 
-        return ResponseEntity.ok().body("Reseña " + parsedId + " borrada.");
+        return ResponseEntity.ok().body("Reseña " + parsedId.getResultLong() + " borrada.");
     }
 
-    private Long validateInteger(String intAsStr,String paramName){
-        try {
-            Long parsedInt = Long.parseLong(intAsStr);
-
-            if(parsedInt < 0){
-                parsedInt = -1L;
-                error = buildResponseError(HttpStatus.BAD_REQUEST,paramName+" no puede ser negativo");
-            }
-
-            return parsedInt;
-        } catch (Exception e) {
-            error = buildResponseError(HttpStatus.BAD_REQUEST,paramName+" no valido");
-            return -1L;
-        }
-    }
-
-    private ResponseEntity<ErrorMessage> buildResponseError(HttpStatus status,String message){
-        return ResponseEntity.status(status).body(new ErrorMessage(status.value(),message));
-    }
 }

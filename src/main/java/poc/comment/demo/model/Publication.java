@@ -1,5 +1,7 @@
 package poc.comment.demo.model;
 
+import org.springframework.hateoas.RepresentationModel;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,7 +11,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table (name = "publicacion")
-public class Publication {
+public class Publication extends RepresentationModel<Publication> {
 
     @Id
     @GeneratedValue ( strategy = GenerationType.IDENTITY)
