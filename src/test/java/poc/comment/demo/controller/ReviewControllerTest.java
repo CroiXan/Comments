@@ -1,6 +1,5 @@
 package poc.comment.demo.controller;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public class ReviewControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/review/2"))
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.title",Matchers.is("buenos precios")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.stars",Matchers.is(93)));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.stars",Matchers.is(3)));
 
     }
 
