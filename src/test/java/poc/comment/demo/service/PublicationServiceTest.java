@@ -34,13 +34,13 @@ public class PublicationServiceTest {
 
         when(publicationRepositoryMock.save(any())).thenReturn(publication);
 
-        publicationService.createPublication(publication);
+        Publication createdPublication = publicationService.createPublication(publication);
 
-        assertNotNull(publication);
-        assertEquals(1L, publication.getId());
-        assertEquals(100, publication.getUserId());
-        assertEquals("Nuevo Restaurante", publication.getTitle());
-        assertEquals("Comida criolla", publication.getDescription());
+        assertNotNull(createdPublication);
+        assertEquals(1L, createdPublication.getId());
+        assertEquals(100, createdPublication.getUserId());
+        assertEquals("Nuevo Restaurante", createdPublication.getTitle());
+        assertEquals("Comida criolla", createdPublication.getDescription());
 
     }
 

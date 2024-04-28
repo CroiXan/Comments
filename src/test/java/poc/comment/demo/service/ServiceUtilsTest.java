@@ -1,7 +1,9 @@
 package poc.comment.demo.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +19,7 @@ public class ServiceUtilsTest {
         ParsedLong result = serviceUtils.validateLong("no-numerico", "TestVar");
 
         assertNotNull(result);
-        assertEquals(false, result.isSuccess());
+        assertFalse(result.isSuccess());
         assertEquals("TestVar no valido", result.getErrorMessage());
 
     }
@@ -30,7 +32,7 @@ public class ServiceUtilsTest {
         ParsedLong result = serviceUtils.validateLong("-20", "TestVar");
 
         assertNotNull(result);
-        assertEquals(false, result.isSuccess());
+        assertFalse(result.isSuccess());
         assertEquals("TestVar no puede ser negativo", result.getErrorMessage());
 
     }
@@ -43,7 +45,7 @@ public class ServiceUtilsTest {
         ParsedLong result = serviceUtils.validateLong("10", "TestVar");
 
         assertNotNull(result);
-        assertEquals(true, result.isSuccess());
+        assertTrue(result.isSuccess());
         assertEquals(10L, result.getResultLong());
 
     }
