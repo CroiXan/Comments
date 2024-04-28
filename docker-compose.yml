@@ -1,6 +1,6 @@
 version: '1'
 services:
-  petshop:
+  microservice:
     build:
       context: .
       dockerfile: Dockerfile
