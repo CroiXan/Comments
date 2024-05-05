@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import poc.comment.demo.model.Publication;
 import poc.comment.demo.service.PublicationServiceImpl;
