@@ -168,8 +168,8 @@ public class PublicationController {
         return ResponseEntity.ok().body("Publicacion " + parsedId + " borrada.");
     }
 
-    @GetMapping("/{id}/review")
-    public ResponseEntity<?> getReviewAverage(@PathVariable String id) {
+    @GetMapping("/{id}/reviewResult")
+    public EntityModel<ReviewDetail> getReviewAverage(@PathVariable String id) {
         
         ParsedLong parsedId = serviceUtils.validateLong(id, "id");
         int countReviews = 0;
@@ -177,6 +177,10 @@ public class PublicationController {
 
         if(!parsedId.isSuccess()){
             throw new PublicationBadRequestException(parsedId.getErrorMessage());
+        }
+
+        if (!publicationService.existsPublicationById(parsedId.getResultLong())) {
+            throw new PublicationNotFoundException("publicacion no encontrada");
         }
 
         Optional<Publication> publication = publicationService.getPublicationById(parsedId.getResultLong());
@@ -196,7 +200,12 @@ public class PublicationController {
                 
         DecimalFormat format = new DecimalFormat("#.##");
 
-        return ResponseEntity.ok(new ReviewDetail(Long.valueOf(parsedId.getResultLong()).intValue(), publication.get().getTitle(), Double.parseDouble(format.format(average))));
+        ReviewDetail reviewResult = new ReviewDetail(Long.valueOf(parsedId.getResultLong()).intValue(), publication.get().getTitle(), Double.parseDouble(format.format(average)));
+
+        return EntityModel.of(reviewResult,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getPublishById(parsedId.getResultLong())).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).getAllPublish()).withRel("all-publish")
+        );
 
     }
 
