@@ -1,6 +1,8 @@
 poc\comment\demo\DemoApplicationTests.class
-poc\comment\demo\service\ReviewServiceTest.class
-poc\comment\demo\service\ServiceUtilsTest.class
+poc\comment\demo\controller\PublicationControllerTest.class
 poc\comment\demo\service\PublicationServiceTest.class
 poc\comment\demo\controller\ReviewControllerTest.class
+poc\comment\demo\repository\ReviewRepositoryTest.class
+poc\comment\demo\service\ReviewServiceTest.class
+poc\comment\demo\service\ServiceUtilsTest.class
 poc\comment\demo\repository\PublicationRepositoryTest.class

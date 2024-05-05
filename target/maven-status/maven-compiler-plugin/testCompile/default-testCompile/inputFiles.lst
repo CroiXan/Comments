@@ -2,5 +2,7 @@ C:\Users\GPD\Documents\GitHub\Comments\src\test\java\poc\comment\demo\controller
 C:\Users\GPD\Documents\GitHub\Comments\src\test\java\poc\comment\demo\service\PublicationServiceTest.java
 C:\Users\GPD\Documents\GitHub\Comments\src\test\java\poc\comment\demo\service\ReviewServiceTest.java
 C:\Users\GPD\Documents\GitHub\Comments\src\test\java\poc\comment\demo\service\ServiceUtilsTest.java
+C:\Users\GPD\Documents\GitHub\Comments\src\test\java\poc\comment\demo\repository\ReviewRepositoryTest.java
+C:\Users\GPD\Documents\GitHub\Comments\src\test\java\poc\comment\demo\controller\PublicationControllerTest.java
 C:\Users\GPD\Documents\GitHub\Comments\src\test\java\poc\comment\demo\repository\PublicationRepositoryTest.java
 C:\Users\GPD\Documents\GitHub\Comments\src\test\java\poc\comment\demo\DemoApplicationTests.java
