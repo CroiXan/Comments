@@ -39,7 +39,7 @@ public class PublicationController {
     @Autowired
     private ReviewService reviewService;
 
-    private ServiceUtils serviceUtils;
+    private ServiceUtils serviceUtils = new ServiceUtils();
 
     @GetMapping
     public CollectionModel<EntityModel<Publication>> getAllPublish() {

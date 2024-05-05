@@ -35,7 +35,7 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
-    private ServiceUtils serviceUtils;
+    private ServiceUtils serviceUtils = new ServiceUtils();
 
     @GetMapping
     public CollectionModel<EntityModel<Review>> getAllReviews() {
